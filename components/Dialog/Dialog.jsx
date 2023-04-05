@@ -1,14 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Dialog.css';
 
-const Dialog = ({ isOpen, onClose, title, children, content }) => {
+const Dialog = ({ isOpen, onClose, title, children, closeOnOverlayClick }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 27) {
+      onClose();
+    }
+  };
+  const handleOverlayClick = (event) => {
+    if (closeOnOverlayClick && event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className='dialog-overlay'>
-      <div className='dialog'>
+    <div
+      className='dialog-overlay'
+      data-testid='dialog-overlay'
+      onClick={handleOverlayClick}>
+      <div className='dialog' data-testid='dialog'>
         <button
           className='dialog-close'
           role='button'
@@ -16,11 +39,8 @@ const Dialog = ({ isOpen, onClose, title, children, content }) => {
           onClick={onClose}>
           <span>&times;</span>
         </button>
-        <div className='dialog-content'>
-          <h1>{title}</h1>
-          {children}
-          <p>{content}</p>
-        </div>
+        <h1 className='dialog-title'>{title}</h1>
+        <div className='dialog-content'>{children}</div>
       </div>
     </div>
   );
