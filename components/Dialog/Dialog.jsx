@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './Dialog.css';
 
 const Dialog = ({ isOpen, onClose, title, children, closeOnOverlayClick }) => {
@@ -50,6 +51,14 @@ const Dialog = ({ isOpen, onClose, title, children, closeOnOverlayClick }) => {
       </div>
     </div>
   );
+};
+
+Dialog.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  children: PropTypes.node,
+  closeOnOverlayClick: PropTypes.bool.isRequired,
 };
 
 export default Dialog;
