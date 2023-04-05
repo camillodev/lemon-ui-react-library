@@ -9,7 +9,11 @@ const Dialog = ({ isOpen, onClose, children }) => {
   return (
     <div className='dialog-overlay'>
       <div className='dialog'>
-        <button className='dialog-close' onClick={onClose}>
+        <button
+          className='dialog-close'
+          role='button'
+          aria-label='close dialog'
+          onClick={onClose}>
           <span>&times;</span>
         </button>
         <div className='dialog-content'>{children}</div>
