@@ -12,7 +12,9 @@ export const Open = Template.bind({});
 Open.args = {
   isOpen: true,
   onClose: () => {},
-  children: <p>Dialog content</p>,
+  title: 'Dialog title',
+  children: <p>Dialog contents</p>,
+  content: 'Dialog content',
 };
 
 export const Closed = Template.bind({});

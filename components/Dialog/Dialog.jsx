@@ -1,7 +1,7 @@
 import React from 'react';
 import './Dialog.css';
 
-const Dialog = ({ isOpen, onClose, children }) => {
+const Dialog = ({ isOpen, onClose, title, children, content }) => {
   if (!isOpen) {
     return null;
   }
@@ -16,7 +16,11 @@ const Dialog = ({ isOpen, onClose, children }) => {
           onClick={onClose}>
           <span>&times;</span>
         </button>
-        <div className='dialog-content'>{children}</div>
+        <div className='dialog-content'>
+          <h1>{title}</h1>
+          {children}
+          <p>{content}</p>
+        </div>
       </div>
     </div>
   );
