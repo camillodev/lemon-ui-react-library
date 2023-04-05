@@ -39,8 +39,14 @@ const Dialog = ({ isOpen, onClose, title, children, closeOnOverlayClick }) => {
           onClick={onClose}>
           <span>&times;</span>
         </button>
-        <h1 className='dialog-title'>{title}</h1>
-        <div className='dialog-content'>{children}</div>
+        <h1 className='dialog-title' data-testid='dialog-title'>
+          {title}
+        </h1>
+        {React.Children.count(children) > 0 && (
+          <div className='dialog-content' data-testid='dialog-content'>
+            {children}
+          </div>
+        )}
       </div>
     </div>
   );

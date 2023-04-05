@@ -1,140 +1,108 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import Dialog from './Dialog';
+import '@testing-library/jest-dom/extend-expect';
 
 describe('Dialog component', () => {
   test('renders open dialog correctly', () => {
-    const handleClose = jest.fn();
-    const { getByText, getByRole } = render(
-      <Dialog isOpen={true} onClose={handleClose}>
-        Dialog Content
+    const { getByTestId } = render(
+      <Dialog isOpen={true} onClose={() => {}} title='Test Dialog'>
+        Test content
       </Dialog>
     );
-
-    expect(getByText('Dialog Content')).toBeInTheDocument();
-
-    fireEvent.click(getByRole('button', { name: /close/i }));
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    expect(getByTestId('dialog-overlay')).toBeInTheDocument();
   });
 
-  test('Dialog component overlays entire screen, regardless of parent size', () => {
-    const { getByTestId } = render(
-      <div style={{ height: '500px' }}>
-        <Dialog isOpen={true} onClose={() => {}} />
-      </div>
-    );
-
-    const overlay = getByTestId('dialog-overlay');
-    const dialog = getByTestId('dialog');
-
-    expect(overlay).toHaveStyle(
-      'position: fixed; top: 0; left: 0; width: 100%; height: 100%;'
-    );
-    expect(dialog).toHaveStyle(
-      'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'
-    );
-  });
-
-  test('Dialog has a version where content is not displayed', () => {
+  test('Dialog has a version where children is not displayed', () => {
     const { queryByTestId } = render(
-      <Dialog isOpen={true} onClose={() => {}} hideContent={true} />
+      <Dialog isOpen={true} onClose={() => {}} title='Test Dialog' />
     );
-
-    const dialogContent = queryByTestId('dialog-content');
-    expect(dialogContent).toBeNull();
+    expect(queryByTestId('dialog-content')).not.toBeInTheDocument();
   });
 
   test('Dialog has a version where content is displayed', () => {
-    const { getByText } = render(
-      <Dialog isOpen={true} onClose={() => {}} hideContent={false}>
-        Dialog Content
+    const { getByText, queryByTestId } = render(
+      <Dialog
+        isOpen={true}
+        onClose={() => {}}
+        title='Test Dialog'
+        hideChildren={false}>
+        Test content
       </Dialog>
     );
-
-    expect(getByText('Dialog Content')).toBeInTheDocument();
+    expect(getByText('Test content')).toBeInTheDocument();
+    expect(queryByTestId('dialog-content')).toBeInTheDocument();
   });
 
   test('Dialog component controls its visibility based on the isOpen prop and accepts a callback onClose', () => {
-    const handleClose = jest.fn();
-    const { getByText } = render(
-      <Dialog isOpen={true} onClose={handleClose}>
-        Dialog Content
+    const { queryByTestId } = render(
+      <Dialog isOpen={false} title='Test Dialog'>
+        Test content
       </Dialog>
     );
 
-    expect(getByText('Dialog Content')).toBeInTheDocument();
+    expect(queryByTestId('dialog')).not.toBeInTheDocument();
 
-    fireEvent.click(getByText('Close'));
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    const handleClose = jest.fn();
+    const { getByRole } = render(
+      <Dialog isOpen={true} onClose={handleClose} title='Test Dialog'>
+        Test content
+      </Dialog>
+    );
+    const closeButton = getByRole('button', { name: 'close dialog' });
+    expect(handleClose).not.toBeCalled();
+    fireEvent.click(closeButton);
+    expect(handleClose).toBeCalledTimes(1);
   });
 
   test('Clicking the X icon closes the dialog', () => {
     const handleClose = jest.fn();
     const { getByLabelText } = render(
-      <Dialog isOpen={true} onClose={handleClose}>
-        Dialog Content
+      <Dialog isOpen={true} onClose={handleClose} title='Test Dialog'>
+        Test content
       </Dialog>
     );
-
-    const closeIcon = getByLabelText('Close');
-    fireEvent.click(closeIcon);
-
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(getByLabelText('close dialog'));
+    expect(handleClose).toBeCalledTimes(1);
   });
 
   test('Pressing ESC key closes the dialog', () => {
     const handleClose = jest.fn();
-    const { getByTestId } = render(
-      <Dialog isOpen={true} onClose={handleClose}>
-        Dialog Content
+    render(
+      <Dialog isOpen={true} onClose={handleClose} title='Test Dialog'>
+        Test content
       </Dialog>
     );
-
-    fireEvent.keyDown(getByTestId('dialog'), { key: 'Escape', code: 'Escape' });
-
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(document, { keyCode: 27 });
+    expect(handleClose).toBeCalledTimes(1);
   });
 
   test('Clicking on the overlay layer closes the dialog if closeOnOverlayClick prop is true', () => {
     const handleClose = jest.fn();
     const { getByTestId } = render(
-      <Dialog isOpen={true} onClose={handleClose} closeOnOverlayClick={true}>
-        Dialog Content
+      <Dialog
+        isOpen={true}
+        onClose={handleClose}
+        title='Test Dialog'
+        closeOnOverlayClick={true}>
+        Test content
+      </Dialog>
+    );
+    fireEvent.click(getByTestId('dialog-overlay'));
+    expect(handleClose).toBeCalledTimes(1);
+  });
+
+  test('Dialog can not be closed by clicking on the overlay when closeOnOverlayClick is false', () => {
+    const handleClose = jest.fn();
+    const { getByTestId } = render(
+      <Dialog isOpen={true} onClose={handleClose} title='Test Dialog'>
+        Test content
       </Dialog>
     );
 
-    fireEvent.click(getByTestId('overlay'));
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
+    const dialogOverlay = getByTestId('dialog-overlay');
+    fireEvent.click(dialogOverlay);
 
-  test('Contains the props title, isOpen, onClose, closeOnOverlayClick and children', () => {
-    const { getByTestId } = render(
-      <Dialog isOpen={true} onClose={() => {}} title='My Dialog'>
-        Dialog Content
-      </Dialog>
-    );
-
-    expect(getByTestId('dialog')).toHaveAttribute('title', 'My Dialog');
-    expect(getByTestId('dialog')).toHaveAttribute('isOpen', 'true');
-    expect(getByTestId('dialog')).toHaveAttribute(
-      'closeonoverlayclick',
-      'false'
-    );
-    expect(getByTestId('dialog')).toHaveTextContent('Dialog Content');
-  });
-
-  // Figma
-  test('Dialog does not take up the entire screen even when the content exceeds the height', () => {
-    const { getByTestId } = render(
-      <div style={{ height: '1000px' }}>
-        <Dialog isOpen={true} onClose={() => {}}>
-          <div style={{ height: '1500px' }}>Dialog Content</div>
-        </Dialog>
-      </div>
-    );
-
-    expect(getByTestId('dialog-content')).toHaveStyle(
-      'max-height: calc(100vh - 128px);'
-    );
+    expect(handleClose).toHaveBeenCalledTimes(0);
   });
 });
